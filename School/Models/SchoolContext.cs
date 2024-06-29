@@ -4,26 +4,39 @@ namespace SchoolApp.Models
 {
     public class SchoolContext : DbContext
     {
-        public SchoolContext(DbContextOptions<SchoolContext> options) : base(options) { }
+        public SchoolContext(DbContextOptions<SchoolContext> options)
+            : base(options)
+        {
+        }
 
         public DbSet<Student> Students { get; set; }
-        public DbSet<Course> Courses { get; set; }
-        public DbSet<Enrollment> Enrollments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Enrollment>()
-                .HasKey(e => new { e.EnrollmentId });
+            base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Enrollment>()
-                .HasOne(e => e.Student)
-                .WithMany(s => s.Enrollments)
-                .HasForeignKey(e => e.StudentId);
+            // Configure the Student entity
+            modelBuilder.Entity<Student>(entity =>
+            {
+                entity.HasKey(e => e.StudentId);
 
-            modelBuilder.Entity<Enrollment>()
-                .HasOne(e => e.Course)
-                .WithMany(c => c.Enrollments)
-                .HasForeignKey(e => e.CourseId);
+                entity.Property(e => e.FirstName)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.LastName)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.DateOfBirth)
+                    .IsRequired();
+            });
+
+            // Optionally, seed initial data
+            modelBuilder.Entity<Student>().HasData(
+                new Student { StudentId = 1, FirstName = "John", LastName = "Doe", DateOfBirth = DateTime.Now },
+                new Student { StudentId = 2, FirstName = "Jane", LastName = "Smith", DateOfBirth = DateTime.Now }
+            );
         }
     }
 }

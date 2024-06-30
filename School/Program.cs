@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using School.Models;
 using SchoolApp.Models;
 using System;
 using System.Configuration;
@@ -31,23 +32,40 @@ namespace SchoolApp
                     Console.WriteLine("Какви операции искате да извършите? ");
                     Console.WriteLine("Добавяне (създаване) на нов ученик (1).\n Премахване (изтриване) на ученик (2). " +
                         "\n Обновяване (заместване) на ученик (3).\n Извеждане на списък с всички класове и ученици (4).");
-                    int n = int.Parse(Console.ReadLine());
-                    if (n == 1)
+                    string n = Console.ReadLine();
+                    if (n == "1")
                     {
                         PerformCreateOperation(context);
                     }
-                    else if (n == 2)
+                    else if (n == "2")
                     {
                         PerformDeleteOperation(context);
                     }
-                    else if (n == 3)
+                    else if (n == "3")
                     {
                         PerformUpdateOperation(context);
                     }
-                    else if (n == 4)
+                    else if (n == "4")
                     {
                         PerformReadOperation(context);
                     }
+                    else if (n == "5")
+                    {
+                        PerformReadTeachersOperation(context);
+                    }
+                    else if (n == "6")
+                    {
+                        PerformAddNewTeacher(context);
+                    }
+                    else if (n == "7")
+                    {
+                        PerformDeleteTeacher(context);
+                    }
+                    else if (n == "exit")
+                    {
+                        return;
+                    }
+                    else Console.WriteLine("Невалидна команда!");
                 }
             }
         }
@@ -291,26 +309,132 @@ namespace SchoolApp
             int dateOfBirthWidth = 15;
 
             // Print table header
-            PrintLine(idWidth, firstNameWidth, lastNameWidth, classIdWidth, dateOfBirthWidth);
-            PrintRow("ID", "Първо име", "Фамилия", "Клас", "Дата на раждане", idWidth, firstNameWidth, lastNameWidth, classIdWidth, dateOfBirthWidth);
-            PrintLine(idWidth, firstNameWidth, lastNameWidth, classIdWidth, dateOfBirthWidth);
+            PrintLineStudents(idWidth, firstNameWidth, lastNameWidth, classIdWidth, dateOfBirthWidth);
+            PrintRowStudents("ID", "Първо име", "Фамилия", "Клас", "Дата на раждане", idWidth, firstNameWidth, lastNameWidth, classIdWidth, dateOfBirthWidth);
+            PrintLineStudents(idWidth, firstNameWidth, lastNameWidth, classIdWidth, dateOfBirthWidth);
 
             // Print students in table format
             foreach (var student in students)
             {
-                PrintRow(student.StudentId.ToString(), student.FirstName, student.LastName, student.ClassID.ToString(), student.DateOfBirth.ToShortDateString(), idWidth, firstNameWidth, lastNameWidth, classIdWidth, dateOfBirthWidth);
+                PrintRowStudents(student.StudentId.ToString(), student.FirstName, student.LastName, student.ClassID.ToString(), student.DateOfBirth.ToShortDateString(), idWidth, firstNameWidth, lastNameWidth, classIdWidth, dateOfBirthWidth);
             }
-            PrintLine(idWidth, firstNameWidth, lastNameWidth, classIdWidth, dateOfBirthWidth);
+            PrintLineStudents(idWidth, firstNameWidth, lastNameWidth, classIdWidth, dateOfBirthWidth);
+        }
+        static void PerformReadTeachersOperation(SchoolContext context)
+        {
+            Console.WriteLine("Извеждане на списък с всички учители");
+
+            var teachers = context.Teachers.OrderBy(t => t.TeacherId).ToList();
+
+            // Define column widths
+            int idWidth = 10;
+            int firstNameWidth = 15;
+            int lastNameWidth = 15;
+            int subjectWidth = 15;
+
+            // Print table header
+            PrintLineTeachers(idWidth, firstNameWidth, lastNameWidth, subjectWidth);
+            PrintRowTeachers("ID", "Първо име", "Фамилия", "Предмет", idWidth, firstNameWidth, lastNameWidth, subjectWidth);
+            PrintLineTeachers(idWidth, firstNameWidth, lastNameWidth, subjectWidth);
+
+            // Print teachers in table format
+            foreach (var teacher in teachers)
+            {
+                PrintRowTeachers(teacher.TeacherId.ToString(), teacher.FirstName, teacher.LastName, teacher.Subject.Replace("Физическо Възпитание и Спорт", "ФВС").Replace("Български Език и Лтература", "БЕЛ").Replace("Информационни Технологии", "ИТ"), idWidth, firstNameWidth, lastNameWidth, subjectWidth);
+            }
+            PrintLineTeachers(idWidth, firstNameWidth, lastNameWidth, subjectWidth);
+        }
+        static void PerformAddNewTeacher(SchoolContext context)
+        {
+            Console.WriteLine("Добавяне на нов учител");
+
+            // Въвеждане на информация за новия учител
+            Console.Write("Въведете име на учителя: ");
+            string firstName = Console.ReadLine();
+
+            Console.Write("Въведете фамилия на учителя: ");
+            string lastName = Console.ReadLine();
+
+            Console.Write("Въведете предмет на учителя: ");
+            string subject = Console.ReadLine();
+            // Създаване на нов обект Teacher и добавяне в базата данни
+            Teacher newTeacher = new Teacher
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                Subject = subject,
+            };
+
+            context.Teachers.Add(newTeacher);
+            context.SaveChanges();
+
+            Console.WriteLine("Новият учител е добавен успешно.");
+        }
+        static void PerformDeleteTeacher(SchoolContext context)
+        {
+            Console.WriteLine("Изтриване на учител по име и фамилия");
+
+            Console.Write("Въведете първо име на учителя за изтриване: ");
+            string firstNameToDelete = Console.ReadLine();
+
+            Console.Write("Въведете фамилия на учителя за изтриване: ");
+            string lastNameToDelete = Console.ReadLine();
+
+            var teacherToDelete = context.Teachers
+                .FirstOrDefault(t => t.FirstName == firstNameToDelete && t.LastName == lastNameToDelete);
+
+            if (teacherToDelete == null)
+            {
+                Console.WriteLine($"Учител с име '{firstNameToDelete} {lastNameToDelete}' не е намерен.");
+            }
+            else
+            {
+                // Related records will be deleted automatically due to cascade delete
+                context.Teachers.Remove(teacherToDelete);
+                context.SaveChanges();
+                Console.WriteLine($"Учител с име '{firstNameToDelete} {lastNameToDelete}' е изтрит успешно.");
+            }
         }
 
-        static void PrintLine(int idWidth, int firstNameWidth, int lastNameWidth, int classIdWidth, int dateOfBirthWidth)
+
+        static void PrintLineTeachers(int idWidth, int firstNameWidth, int lastNameWidth, int subjectWidth)
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine(new string('-', idWidth + firstNameWidth + lastNameWidth + subjectWidth + 11));
+            Console.ResetColor();
+        }
+
+        static void PrintRowTeachers(string id, string firstName, string lastName, string subject, int idWidth, int firstNameWidth, int lastNameWidth, int subjectWidth)
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write("| ");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write(id.PadRight(idWidth));
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write(" | ");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.Write(firstName.PadRight(firstNameWidth));
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write(" | ");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.Write(lastName.PadRight(lastNameWidth));
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write(" | ");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write(subject.PadRight(subjectWidth));
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine(" |");
+            Console.ResetColor();
+        }
+
+        static void PrintLineStudents(int idWidth, int firstNameWidth, int lastNameWidth, int classIdWidth, int dateOfBirthWidth)
         {
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine(new string('-', idWidth + firstNameWidth + lastNameWidth + classIdWidth + dateOfBirthWidth + 17));
             Console.ResetColor();
         }
 
-        static void PrintRow(string id, string firstName, string lastName, string classId, string dateOfBirth, int idWidth, int firstNameWidth, int lastNameWidth, int classIdWidth, int dateOfBirthWidth)
+        static void PrintRowStudents(string id, string firstName, string lastName, string classId, string dateOfBirth, int idWidth, int firstNameWidth, int lastNameWidth, int classIdWidth, int dateOfBirthWidth)
         {
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write("| ");
@@ -336,8 +460,6 @@ namespace SchoolApp
             Console.WriteLine(" |");
             Console.ResetColor();
         }
-
-
 
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using School.Models;
 
 namespace SchoolApp.Models
 {
@@ -10,6 +11,9 @@ namespace SchoolApp.Models
         }
 
         public DbSet<Student> Students { get; set; }
+        public DbSet<Teacher> Teachers { get; set; }
+        public DbSet<TeacherCourse> TeacherCourses { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,11 +36,7 @@ namespace SchoolApp.Models
                     .IsRequired();
             });
 
-            // Optionally, seed initial data
-            modelBuilder.Entity<Student>().HasData(
-                new Student { StudentId = 1, FirstName = "John", LastName = "Doe", DateOfBirth = DateTime.Now },
-                new Student { StudentId = 2, FirstName = "Jane", LastName = "Smith", DateOfBirth = DateTime.Now }
-            );
+            
         }
     }
 }

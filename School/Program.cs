@@ -26,7 +26,6 @@ namespace SchoolApp
                 Console.WriteLine("School Management System");
 
                 // Perform CRUD operations
-                //PerformCrudOperations(context);
                 while (true)
                 {
                     Console.WriteLine("Какви операции искате да извършите? ");
@@ -34,8 +33,20 @@ namespace SchoolApp
                         "\n Обновяване (заместване) на ученик (3).\n Извеждане на списък с всички класове и ученици (4).");
                     int n = int.Parse(Console.ReadLine());
                     if (n == 1)
-                    { 
+                    {
                         PerformCreateOperation(context);
+                    }
+                    else if (n == 2)
+                    {
+                        PerformDeleteOperation(context);
+                    }
+                    else if (n == 3)
+                    {
+                        PerformUpdateOperation(context);
+                    }
+                    else if (n == 4)
+                    {
+                        PerformReadOperation(context);
                     }
                 }
             }
@@ -50,35 +61,35 @@ namespace SchoolApp
 
         static void PerformCreateOperation(SchoolContext context)
         {
-            Console.Write("Enter a name for a new Student: ");
+            Console.Write("Въведете името на новия ученик: ");
             var firstName = Console.ReadLine();
-            Console.Write("Enter the last name for the new Student: ");
+            Console.Write("Въведете фамилията на новия ученик: ");
             var lastName = Console.ReadLine();
-            Console.Write("Enter the class for the new Student (1, 2, 3, 4, 5, 6, or 7): ");
+            Console.Write("Въведете класа на ученика (1, 2, 3, 4, 5, 6, or 7): ");
             int classId;
             while (!int.TryParse(Console.ReadLine(), out classId) || classId < 1 || classId > 7)
             {
-                Console.Write("Invalid class. Please enter a class between 1 and 7: ");
+                Console.Write("Невалиден клас. Въведете клас от 1.-7.: ");
             }
-            Console.Write("Enter the birth year for the new Student: ");
+            Console.Write("Въведете годината на раждане на ученика: ");
             int birthYear;
             while (!int.TryParse(Console.ReadLine(), out birthYear) || birthYear < 1900 || birthYear > DateTime.Now.Year)
             {
-                Console.Write("Invalid year. Please enter a valid birth year: ");
+                Console.Write("Невалидна година. Въведете правилната година: ");
             }
 
-            Console.Write("Enter the birth month for the new Student: ");
+            Console.Write("Въведете месец на раждане на ученика: ");
             int birthMonth;
             while (!int.TryParse(Console.ReadLine(), out birthMonth) || birthMonth < 1 || birthMonth > 12)
             {
-                Console.Write("Invalid month. Please enter a valid birth month (1-12): ");
+                Console.Write("Невалиден месец. Въведете правилният месец (1-12): ");
             }
 
-            Console.Write("Enter the birth day for the new Student: ");
+            Console.Write("Въведете деня на раждане на ученика: ");
             int birthDay;
             while (!int.TryParse(Console.ReadLine(), out birthDay) || birthDay < 1 || birthDay > DateTime.DaysInMonth(birthYear, birthMonth))
             {
-                Console.Write("Invalid day. Please enter a valid birth day: ");
+                Console.Write("Невалиден ден. Въведете правилния ден (1-31): ");
             }
 
             var dateOfBirth = new DateTime(birthYear, birthMonth, birthDay);
@@ -95,42 +106,238 @@ namespace SchoolApp
             context.SaveChanges();
             
 
-            Console.WriteLine($"Student {firstName} {lastName} added successfully.");
+            Console.WriteLine($"Ученикът: {firstName} {lastName} от {classId}A беше добавен успешно.");
         }
-        /*// Read
-
-        Console.WriteLine("Querying for a student");
-            var students = context.Students.OrderBy(s => s.StudentId).ToList();
-
-            foreach (var item in students)
+        static void PerformDeleteOperation(SchoolContext context)
+        {
+            while (true)
             {
-                Console.WriteLine($"{item.StudentId}: {item.FirstName} {item.LastName}");
-            }
+                Console.Write("Въведете първото име на ученика за изтриване: ");
+                var firstName = Console.ReadLine();
+                Console.Write("Въведете фамилното име на ученика за изтриване: ");
+                var lastName = Console.ReadLine();
 
-           // Update
-            Console.Write("Enter the ID of the student to update: ");
-            if (int.TryParse(Console.ReadLine(), out int id))
-            {
-                var studentToUpdate = context.Students.Find(id);
-                if (studentToUpdate != null)
+                var studentsToDelete = context.Students
+                                              .Where(s => s.FirstName == firstName && s.LastName == lastName)
+                                              .ToList();
+            
+                if (studentsToDelete.Count == 1)
                 {
-                    Console.Write("Enter the new name: ");
-                    studentToUpdate.FirstName = Console.ReadLine();
-                    context.SaveChanges();
-                }
-            }
-
-            // Delete
-            Console.Write("Enter the ID of the student to delete: ");
-            if (int.TryParse(Console.ReadLine(), out int deleteId))
-            {
-                var studentToDelete = context.Students.Find(deleteId);
-                if (studentToDelete != null)
-                {
+                    var studentToDelete = studentsToDelete.First();
                     context.Students.Remove(studentToDelete);
                     context.SaveChanges();
+                    Console.WriteLine($"Ученикът {firstName} {lastName} беше изтрит успешно."); break;
                 }
-            } */
+                else if (studentsToDelete.Count > 1)
+                {
+                    Console.WriteLine($"Намерени са няколко ученици с името {firstName} {lastName}. Моля, въведете ID-то на ученика за изтриване:");
+                    foreach (var student in studentsToDelete)
+                    {
+                        Console.WriteLine($"ID: {student.StudentId}, Име: {student.FirstName} {student.LastName}, Клас: {student.ClassID}, Дата на раждане: {student.DateOfBirth.ToShortDateString()}");
+                    }
+                    Console.Write("Въведете ID-то на ученика: ");
+                    if (int.TryParse(Console.ReadLine(), out int studentId))
+                    {
+                        var studentToDelete = studentsToDelete.SingleOrDefault(s => s.StudentId == studentId);
+                        if (studentToDelete != null)
+                        {
+                            context.Students.Remove(studentToDelete);
+                            context.SaveChanges();
+                            Console.WriteLine($"Ученикът с ID {studentId} беше изтрит успешно."); break;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Невалидно ID. Изтриването не беше извършено.");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Невалидно ID. Изтриването не беше извършено.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Не е намерен ученик с това име.");
+                }
+            }
+        }
+        static void PerformUpdateOperation(SchoolContext context)
+        {
+            while (true)
+            {
+                Console.Write("Въведете първото име на ученика за обновяване: ");
+                var firstName = Console.ReadLine();
+                Console.Write("Въведете фамилното име на ученика за обновяване: ");
+                var lastName = Console.ReadLine();
+
+                var studentsToUpdate = context.Students
+                                              .Where(s => s.FirstName == firstName && s.LastName == lastName)
+                                              .ToList();
+
+                if (studentsToUpdate.Count == 1)
+                {
+                    var studentToUpdate = studentsToUpdate.First();
+                    UpdateStudentInformation(context, studentToUpdate); break;
+                }
+                else if (studentsToUpdate.Count > 1)
+                {
+                    Console.WriteLine($"Намерени са няколко ученици с името {firstName} {lastName}. Моля, въведете ID-то на ученика за обновяване:");
+                    foreach (var student in studentsToUpdate)
+                    {
+                        Console.WriteLine($"ID: {student.StudentId}, Име: {student.FirstName} {student.LastName}, Клас: {student.ClassID}, Дата на раждане: {student.DateOfBirth.ToShortDateString()}");
+                    }
+
+                    Console.Write("Въведете ID-то на ученика: ");
+                    if (int.TryParse(Console.ReadLine(), out int studentId))
+                    {
+                        var studentToUpdate = studentsToUpdate.SingleOrDefault(s => s.StudentId == studentId);
+                        if (studentToUpdate != null)
+                        {
+                            UpdateStudentInformation(context, studentToUpdate); break;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Невалидно ID. Обновяването не беше извършено.");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Невалидно ID. Обновяването не беше извършено.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Не е намерен ученик с това име.");
+                }
+            }
+        }
+
+        static void UpdateStudentInformation(SchoolContext context, Student student)
+        {
+            Console.Write("Въведете новото първо име: ");
+            student.FirstName = Console.ReadLine();
+            Console.Write("Въведете новата фамилия: ");
+            student.LastName = Console.ReadLine();
+            Console.Write("Въведете новия клас на ученика (1, 2, 3, 4, 5, 6, or 7): ");
+            int classId;
+            while (!int.TryParse(Console.ReadLine(), out classId) || classId < 1 || classId > 7)
+            {
+                Console.Write("Невалиден клас. Въведете клас от 1 до 7: ");
+            }
+            student.ClassID = classId;
+
+            Console.Write("Въведете новата година на раждане на ученика: ");
+            int birthYear;
+            while (!int.TryParse(Console.ReadLine(), out birthYear) || birthYear < 1900 || birthYear > DateTime.Now.Year)
+            {
+                Console.Write("Невалидна година. Въведете правилната година: ");
+            }
+
+            Console.Write("Въведете новия месец на раждане на ученика: ");
+            int birthMonth;
+            while (!int.TryParse(Console.ReadLine(), out birthMonth) || birthMonth < 1 || birthMonth > 12)
+            {
+                Console.Write("Невалиден месец. Въведете правилния месец (1-12): ");
+            }
+
+            Console.Write("Въведете новия ден на раждане на ученика: ");
+            int birthDay;
+            while (!int.TryParse(Console.ReadLine(), out birthDay) || birthDay < 1 || birthDay > DateTime.DaysInMonth(birthYear, birthMonth))
+            {
+                Console.Write("Невалиден ден. Въведете правилния ден (1-31): ");
+            }
+
+            student.DateOfBirth = new DateTime(birthYear, birthMonth, birthDay);
+
+            context.SaveChanges();
+            Console.WriteLine($"Информацията за ученика {student.FirstName} {student.LastName} беше обновена успешно.");
+        }
+        static void PerformReadOperation(SchoolContext context)
+        {
+            Console.WriteLine("Извеждане на списък с всички ученици");
+            Console.WriteLine("Изберете опция:");
+            Console.WriteLine("1. Покажи всички ученици");
+            Console.WriteLine("2. Покажи ученици от определен клас");
+
+            int option;
+            while (!int.TryParse(Console.ReadLine(), out option) || (option != 1 && option != 2))
+            {
+                Console.WriteLine("Невалидна опция. Моля, въведете 1 или 2:");
+            }
+
+            List<Student> students;
+
+            if (option == 1)
+            {
+                students = context.Students.OrderBy(s => s.StudentId).ToList();
+            }
+            else
+            {
+                Console.Write("Въведете класа (1-7): ");
+                int classId;
+                while (!int.TryParse(Console.ReadLine(), out classId) || classId < 1 || classId > 7)
+                {
+                    Console.Write("Невалиден клас. Моля, въведете клас от 1 до 7: ");
+                }
+
+                students = context.Students.Where(s => s.ClassID == classId).OrderBy(s => s.StudentId).ToList();
+            }
+
+            // Define column widths
+            int idWidth = 10;
+            int firstNameWidth = 15;
+            int lastNameWidth = 15;
+            int classIdWidth = 10;
+            int dateOfBirthWidth = 15;
+
+            // Print table header
+            PrintLine(idWidth, firstNameWidth, lastNameWidth, classIdWidth, dateOfBirthWidth);
+            PrintRow("ID", "Първо име", "Фамилия", "Клас", "Дата на раждане", idWidth, firstNameWidth, lastNameWidth, classIdWidth, dateOfBirthWidth);
+            PrintLine(idWidth, firstNameWidth, lastNameWidth, classIdWidth, dateOfBirthWidth);
+
+            // Print students in table format
+            foreach (var student in students)
+            {
+                PrintRow(student.StudentId.ToString(), student.FirstName, student.LastName, student.ClassID.ToString(), student.DateOfBirth.ToShortDateString(), idWidth, firstNameWidth, lastNameWidth, classIdWidth, dateOfBirthWidth);
+            }
+            PrintLine(idWidth, firstNameWidth, lastNameWidth, classIdWidth, dateOfBirthWidth);
+        }
+
+        static void PrintLine(int idWidth, int firstNameWidth, int lastNameWidth, int classIdWidth, int dateOfBirthWidth)
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine(new string('-', idWidth + firstNameWidth + lastNameWidth + classIdWidth + dateOfBirthWidth + 17));
+            Console.ResetColor();
+        }
+
+        static void PrintRow(string id, string firstName, string lastName, string classId, string dateOfBirth, int idWidth, int firstNameWidth, int lastNameWidth, int classIdWidth, int dateOfBirthWidth)
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write("| ");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write(id.PadRight(idWidth));
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write(" | ");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.Write(firstName.PadRight(firstNameWidth));
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write(" | ");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.Write(lastName.PadRight(lastNameWidth));
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write(" | ");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write(classId.PadRight(classIdWidth));
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write(" | ");
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.Write(dateOfBirth.PadRight(dateOfBirthWidth));
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine(" |");
+            Console.ResetColor();
+        }
+
+
 
     }
 }

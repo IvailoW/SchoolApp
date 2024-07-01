@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 28, 2024 at 01:38 PM
+-- Generation Time: Jul 01, 2024 at 02:47 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -375,7 +375,8 @@ INSERT INTO `students` (`StudentID`, `FirstName`, `LastName`, `ClassID`, `DateOf
 (165, 'Уляна', 'Улянова', 7, '2010-09-25'),
 (166, 'Фросина', 'Фросинова', 7, '2010-10-30'),
 (167, 'Ян', 'Янов', 7, '2010-11-05'),
-(168, 'Лъчезар', 'Лъчезаров', 7, '2010-12-10');
+(168, 'Лъчезар', 'Лъчезаров', 7, '2010-12-10'),
+(169, 'Ивайло', 'Игнатов', 7, '2006-11-23');
 
 -- --------------------------------------------------------
 
@@ -430,9 +431,7 @@ INSERT INTO `teachercourses` (`TeacherID`, `CourseID`) VALUES
 (18, 8),
 (18, 10),
 (19, 1),
-(19, 9),
-(20, 2),
-(20, 10);
+(19, 9);
 
 -- --------------------------------------------------------
 
@@ -470,8 +469,7 @@ INSERT INTO `teachers` (`TeacherID`, `FirstName`, `LastName`, `Subject`) VALUES
 (16, 'Цветан', 'Цветанов', 'Физика'),
 (17, 'Яана', 'Яанкова', 'Химия'),
 (18, 'Борислав', 'Борисов', 'История'),
-(19, 'Стефан', 'Стефанов', 'Биология'),
-(20, 'Даниел', 'Димитров', 'География');
+(19, 'Стефан', 'Стефанов', 'Биология');
 
 --
 -- Indexes for dumped tables
@@ -535,7 +533,7 @@ ALTER TABLE `courses`
 -- AUTO_INCREMENT for table `students`
 --
 ALTER TABLE `students`
-  MODIFY `StudentID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=169;
+  MODIFY `StudentID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=170;
 
 --
 -- AUTO_INCREMENT for table `teachers`
@@ -558,7 +556,7 @@ ALTER TABLE `studentcourses`
 -- Constraints for table `teachercourses`
 --
 ALTER TABLE `teachercourses`
-  ADD CONSTRAINT `teachercourses_ibfk_1` FOREIGN KEY (`TeacherID`) REFERENCES `teachers` (`TeacherID`),
+  ADD CONSTRAINT `teachercourses_ibfk_1` FOREIGN KEY (`TeacherID`) REFERENCES `teachers` (`TeacherID`) ON DELETE CASCADE,
   ADD CONSTRAINT `teachercourses_ibfk_2` FOREIGN KEY (`CourseID`) REFERENCES `courses` (`CourseID`);
 COMMIT;
 

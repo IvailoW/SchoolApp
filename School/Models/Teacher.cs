@@ -16,15 +16,5 @@ namespace School.Models
         public string Subject { get; set; }
         
     }
-    public class TeacherCourse
-    {
-        [Key]
-        public int TeacherCourseId { get; set; }
-
-        [ForeignKey("Teacher")]
-        public int TeacherId { get; set; }
-        public Teacher Teacher { get; set; }
-
-        // Add other properties related to courses, e.g., CourseId, etc.
-    }
+    
 }
